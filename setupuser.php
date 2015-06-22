@@ -10,12 +10,5 @@ require 'rb.php';
 
 R::setup('sqlite:army.db');
 
-$user = R::dispense('user');
-$user->username = 'enterstatsman';
-$user->password = 'password';
-$user->email = 'enterstatsman@gmail.com';
-$user->fname = 'Ryan';
-$user->lname = 'Allan';
-$user->prefcolor = '#CC0000';
-
-$id = R::store($user);
+$user = R::load('user', 4);
+R::trash($user);

@@ -54,6 +54,8 @@ if (!LogInForm::checkForLogIn()) {
             //echo "Username: " . $tmpUsr . " | Password: " . $tmpPwd . "Email :" . $tmpEmail . "<br><br>";
 
             try {
+                ArmyForm::checkForUserName($tmpUsr);
+
                 LogInForm::createUser($tmpUsr, $tmpPwd, $tmpEmail);
                 LogInForm::redirectIndex('success', "Created the following user: " . $tmpUsr . " / " . $tmpPwd);
             } catch (UserAlreadyExistsException $e) {

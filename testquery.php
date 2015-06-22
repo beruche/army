@@ -13,11 +13,11 @@ R::setup('sqlite:army.db');
 //R::debug(TRUE);
 
 try {
-    $projectid = 3;
+    $news = ArmyDB::retrieveRecentNews();
 
-    ArmyDB::clearProjectUnits($projectid);
-
-    var_dump(ArmyDB::retrieveUnitsFromProject($projectid));
+    foreach ($news as $newsitem) {
+        var_dump($newsitem);
+    }
 
 
 }

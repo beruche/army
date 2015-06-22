@@ -33,7 +33,7 @@ class ArmyDB {
     }
 
     public static function retrieveUnitsFromProject($projectID) {
-        $units = R::getAll('SELECT * FROM unit WHERE projectid = ' . $projectID);
+        $units = R::find('unit', 'projectid = ' . $projectID);
 
         if (empty($units)) {
             throw new Exception("Project $projectID has no units assigned.");
@@ -43,7 +43,7 @@ class ArmyDB {
     }
 
     public static function retrieveProjectsFromUser($usr) {
-        $projects = R::getAll('SELECT * FROM project WHERE username = "' . $usr . '"');
+        $projects = R::find('project', 'username = "' . $usr . '"');
 
         if (empty($projects)) {
             throw new Exception("User '$usr' has no units assigned.");
@@ -51,6 +51,11 @@ class ArmyDB {
 
         return $projects;
     }
+
+    public static function retrieveRecentNews() {
+        return R::findAll( 'news' , ' ORDER BY date_added DESC LIMIT 10 ' );
+    }
+
 
     public static function retrieveUserNameFromProject($projectid) {
         $project = R::getRow('SELECT username from project WHERE id ='. $projectid);
@@ -65,6 +70,23 @@ class ArmyDB {
     /*
      * Addition functions
      */
+
+    public static function addUser($usr, $password, $email, $fname, $lname, $prefcolor) {
+        try {
+            $user = R::dispense('user');
+            $user->username = trim($usr);
+            $user->password = trim($password);
+            $user->email = trim($email);
+            $user->fname = trim($fname);
+            $user->lname = trim($lname);
+            $user->prefcolor = trim($prefcolor);
+
+            $id = R::store($user);
+        }
+        catch (Exception $e) {
+            throw new Exception ("Unable to create user. " . $e->getMessage());
+        }
+    }
     public static function addUnit($projectid, $unitname, $qty, $pts, $status, $notes) {
 
         try {

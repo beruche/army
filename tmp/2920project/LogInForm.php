@@ -58,7 +58,7 @@ class LogInForm
             // echo "ID: " . $u['id'] . " User: " . $u['name'] . " Password: " . $u['password'];
             // echo "<br>";
 
-            if ($u['name'] == $user) {
+            if ($u['username    '] == $user) {
                 if ($u['password'] == $password) {
                     return true;
                 }
@@ -172,3 +172,4 @@ class LogInForm
         return false;
     }
 }
+
