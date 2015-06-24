@@ -32,6 +32,10 @@ class ArmyDB {
         return R::getAll('SELECT * FROM news');
     }
 
+    public static function retrieveProjectInfo($projectID) {
+        return R::load('project', $projectID);
+    }
+
     public static function retrieveUnitsFromProject($projectID) {
         $units = R::find('unit', 'projectid = ' . $projectID);
 
@@ -91,6 +95,14 @@ class ArmyDB {
 
         try {
             $dateAdded = R::isoDateTime();
+
+            if (!is_numeric($projectid) || empty($projectid)) {
+                throw new Exception("Project ID of $projectid invalid.");
+            }
+
+            if (empty($unitname)) {
+                throw new Exception("Unitname is invalid: $unitname");
+            }
 
             // add unit to list
             $unit = R::dispense('unit');

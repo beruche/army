@@ -15,7 +15,7 @@ require 'ArmyForm.php';
 R::setup('sqlite:army.db');
 
 if (ArmyForm::checkForLogIn()) {
-    ArmyForm::redirectIndex("error", "You have already logged in!");
+    ArmyForm::redirect("error", "You have already logged in!", "index");
 }
 
 if ((isset($_REQUEST['action'])) && (!empty($_REQUEST['action']))) {
@@ -32,9 +32,9 @@ switch ($action) {
         try {
             ArmyForm::verifyUser($tmpUsr, $tmpPwd);
             $_SESSION['username'] = $tmpUsr;
-            ArmyForm::redirectIndex('success', 'You have logged in, ' . $tmpUsr . '!');
+            ArmyForm::redirect('success', 'You have logged in, ' . $tmpUsr . '!', "user");
         } catch (IncorrectLoginException $e) {
-            ArmyForm::redirectLogin('error', $e->getMessage());
+            ArmyForm::redirect('error', $e->getMessage(), "login");
         }
         break;
     case "create":
@@ -52,9 +52,9 @@ switch ($action) {
             setcookie("tmpUsr", $tmpUsr, time() + (86400 * 30), "/");
             setcookie("tmpPwd", $tmpPwd, time() + (86400 * 30), "/");
             setcookie("tmpEmail", $tmpEmail, time() + (86400 * 30), "/");
-            ArmyForm::redirectCreate();
+            ArmyForm::redirect('','','create');
         } catch (UserAlreadyExistsException $e) {
-            LogInForm::redirectLogin('error', $e->getMessage());
+            LogInForm::redirect('error', $e->getMessage(), 'create');
         }
         break;
     default:

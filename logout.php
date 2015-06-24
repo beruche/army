@@ -14,4 +14,4 @@ require 'ArmyForm.php';
 unset ($_SESSION["username"]);
 $_SESSION["username"] = array();
 session_destroy();
-ArmyForm::redirectIndex('success', "You have logged out!");
+ArmyForm::redirect('success', "You have logged out!", 'index');

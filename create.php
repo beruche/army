@@ -26,10 +26,10 @@ if (isset($_REQUEST['action']) && ($_REQUEST['action'] == "create"))
         ArmyDB::addUser($user, $pwd, $email, $fname, $lname, $cpref);
         ArmyDB::addNewsItem($user, "addUser", null);
         $_SESSION['username'] = $tmpUsr;
-        ArmyForm::redirectIndex('success', 'User ' . $tmpUsr . 'created! Welcome to Army Builder!');
+        ArmyForm::redirect('success', 'User ' . $tmpUsr . 'created! Welcome to Army Builder!', 'user');
     }
     catch (Exception $e) {
-        ArmyForm::redirectLogin('error', "Unable to create user. " . $e->getMessage());
+        ArmyForm::redirect('error', "Unable to create user. " . $e->getMessage(), 'create');
     }
 
 }

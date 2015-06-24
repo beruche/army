@@ -13,11 +13,7 @@ R::setup('sqlite:army.db');
 //R::debug(TRUE);
 
 try {
-    $news = ArmyDB::retrieveRecentNews();
-
-    foreach ($news as $newsitem) {
-        var_dump($newsitem);
-    }
+    ArmyDB::addUnit(2, "Eldar Guardians", 10, 120, 0, null);
 
 
 }

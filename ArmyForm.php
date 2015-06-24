@@ -54,7 +54,7 @@ class ArmyForm {
         if ($isLoggedIn) {
             echo "<div class='collapse navbar-collapse' id='bs-example-navbar-collapse-1'>";
             echo "<ul class='nav navbar-nav'>";
-            echo "<li><a href='about.php'>About</a></li>";
+            echo '<li><a href="user.php?username=' . $user . '"><span class="glyphicon glyphicon-user"></span> Signed in as ' . $user . '</a></li>';
 
             // Projects dropdown
             echo "<li class='dropdown'>";
@@ -66,7 +66,7 @@ class ArmyForm {
                 foreach ($projects as $project) {
                     $title = $project->projectname;
                     $projectid = $project->id;
-                    echo "<li><a href='project?id=" . $projectid . "'>$title</a></li>";
+                    echo "<li><a href='project.php?id=" . $projectid . "'>$title</a></li>";
                 }
             }
             catch (Exception $e) {
@@ -116,11 +116,17 @@ class ArmyForm {
             // Final header
             echo "</ul>";
             echo '<ul class="nav navbar-nav navbar-right">';
-            echo '<li><a href="user.php?username=' . $user . '"><span class="glyphicon glyphicon-user"></span> Signed in as ' . $user . '</a></li>';
             echo '<li><a href="logout.php"><span class="glyphicon glyphicon-log-out"></span> Logout</a></li>';
             echo "</ul>";
         }
-
+        else {
+            echo "<form class='navbar-form navbar-right' role='form' action='login.php'>";
+            echo "<div class='form-group'>";
+            echo "<input type='text' name='usr' class='form-control' placeholder='Username...' required>";
+            echo "<input type='password' name='pwd' class='form-control' placeholder='Password...' required>";
+            echo "<input type='hidden' name='action' value='login'><input type='submit' class='btn btn-default'>";
+            echo "</div></form>";
+        }
         echo "</div></div></div></nav>";
         echo "<div class='container-fluid'>";
 
@@ -160,19 +166,27 @@ class ArmyForm {
         echo "</form></div>";
     }
 
-    static function redirectIndex($action, $msg)
+    static function redirect($action, $msg, $location, $id = null)
     {
-        header("Location: http://" . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/' . "index.php?action=" . $action . "&msg=" . $msg);
-    }
+        $page = null;
 
-    static function redirectLogin($action, $msg)
-    {
-        header("Location: http://" . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/' . "login.php?action=" . $action . "&msg=" . $msg);
-    }
+        switch ($location) {
+            case "index": $page = "index.php"; break;
+            case "login": $page = "login.php"; break;
+            case "user":  $page = "user.php"; break;
+            case "project": $page = "project.php"; break;
+            case "create": $page = "create.php"; break;
+            case "unit": $page = "unit.php"; break;
+            default: $page = "index.php"; break;
 
-    static function redirectCreate()
-    {
-        header("Location: http://" . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/' . "create.php");
+        }
+        if (!is_null($id)) {
+            header("Location: http://" . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/' . $page . "?action=" . $action . "&msg=" . $msg . "&id=" . $id);
+        }
+        else {
+            header("Location: http://" . $_SERVER['HTTP_HOST'] . rtrim(dirname($_SERVER['PHP_SELF']), '/\\') . '/' . $page . "?action=" . $action . "&msg=" . $msg);
+        }
+
     }
 
     static function checkForLogIn()
@@ -217,12 +231,23 @@ class ArmyForm {
 
     }
 
-    static function displayHomePage($user) {
+    static function displayUserPage($user) {
         echo "<div class='row'>";
         echo "<div class='col-xs-12 col-md-8' id='main'>";
         self::displayProjects($user);
         echo "</div>";
         echo "<div class='col-xs-6 col-md-4' id='news'>";
+        self::displayNews();
+        echo "</div>";
+        echo "</div>";
+    }
+
+    static function displayProjectPage($projectid) {
+        echo "<div class='row'>";
+        echo "<div class='col-xs-12 col-md-9' id='main'>";
+        self::displayUnits($projectid);
+        echo "</div>";
+        echo "<div class='col-xs-6 col-md-3' id='news'>";
         self::displayNews();
         echo "</div>";
         echo "</div>";
@@ -234,7 +259,7 @@ class ArmyForm {
         echo "<table class='table table-hover'>";
 
         try {
-            $projects = $projects = ArmyDB::retrieveProjectsFromUser($user);
+            $projects = ArmyDB::retrieveProjectsFromUser($user);
             $count = 0;
 
             echo "<tr><th>ID</th><th>Project Name</th><th>Battle Group</th><th>Pts</th><th colspan='2'>&nbsp;</th></tr>";
@@ -286,6 +311,78 @@ class ArmyForm {
         echo "</div><!-- /div.displayProjects-->";
     }
 
+    static function displayUnits($projectid) {
+        try {
+            $project = ArmyDB::retrieveProjectInfo($projectid);
+            //var_dump($project);
+            $projectname = $project['projectname'];
+            $projectgroup = $project['battlegroup'];
+            $projectgame = $project['gamegroup'];
+            $description = $project['description'];
+
+            echo "<div id='displayProjects' class='container-fluid'>";
+
+            echo "<div class='page-header'>";
+            echo "<h1>$projectname</h1>";
+            echo "<h3>$projectgame</h3>";
+            echo "</div>";
+            echo "<div class='well'>$description</div>";
+            echo "<table class='table table-hover'>";
+        }
+        catch (Exception $e) {
+            echo $e->getMessage();
+        }
+
+
+
+        try {
+            $units = ArmyDB::retrieveUnitsFromProject($projectid);
+            $count = 0;
+
+            echo "<tr><th>ID</th><th>Qty</th><th>Unit Name</th><th>Points</th><th>Status</th><th colspan='2'>&nbsp;</th></tr>";
+
+            foreach ($units as $unit) {
+                $count++;
+                $unitID = $unit->id;
+                $unitname = $unit->name;
+                $qty = $unit->qty;
+                $pts = $unit->pts;
+                $status = $unit->status;
+
+                echo "<tr>";
+                echo "<td>$count</td>";
+                echo "<td>$qty</td>";
+                echo "<td>$unitname</td>";
+                echo "<td>$pts</td>";
+                echo "<td>$status</td>";
+                echo "<td><a href='unit.php?id=" . $unitID . "'><span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a></td>";
+                echo "<td><a href='unit.php?action=deleteUnit&projectid=" . $projectid . "&id=" . $unitID . "'><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td>";
+                echo "</tr>";
+            }
+        }
+        catch (Exception $e) {
+            echo "<tr><td colspan='7'>No units created yet.</td></tr>";
+        }
+
+        // add unit
+        echo "<form role='form' method='post' action='unit.php'><tr>";
+        echo "<td><span class='glyphicon glyphicon-plus' aria-hidden='true'></span></td>";
+        echo "<td><input type='text' class='form-control' name='qty' placeholder='#' required></td>";
+        echo "<td><input type='text' class='form-control' name='unitname' placeholder='Unit Name' required></td>";
+        echo "<td><input type='text' class='form-control' name='pts' placeholder='Points' required></td>";
+        echo "<td colspan='3' class='text-center'><input type='submit' class='btn btn-default' value='Create!'></td>";
+        echo "<input type='hidden' name='action' value='createUnit'>";
+        echo "<input type='hidden' name='projectid' value='" . $projectid . "'>";
+        echo "</form></tr>";
+
+        echo "</table>";
+        echo "</div><!-- /div.displayProjects-->";
+
+
+
+
+    }
+
     static function displayNews() {
         echo "<div id='displayProjects' class='container-fluid'>";
         echo "<h1>Recent Updates</h1>";
@@ -317,21 +414,21 @@ class ArmyForm {
                         echo "<a href='#' class='list-group-item'>";
                         echo "<h4 class='list-group-item-heading'>New user!</h4>";
                         echo "<p class='list-group-item-text'>" . $newsuser . " has joined the site!</p>";
-                        echo "<p class='list-group-item-text small'>$newsdate</p>";
+                        echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
                         echo "</a>";
                         break;
                     case "deleteUnit":
                         echo "<a href='#' class='list-group-item'>";
                         echo "<h4 class='list-group-item-heading'>Unit deleted!</h4>";
                         echo "<p class='list-group-item-text'>" . $newsuser . " deleted unit " . $newsunitid . " from project " . $newsprojectid . "!</p>";
-                        echo "<p class='list-group-item-text small'>$newsdate</p>";
+                        echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
                         echo "</a>";
                         break;
                     default:
                         echo "<a href='#' class='list-group-item'>";
                         echo "<h4 class='list-group-item-heading'>$newsaction</h4>";
                         echo "<p class='list-group-item-text'>Filler text!</p>";
-                        echo "<p class='list-group-item-text small'>$newsdate</p>";
+                        echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
                         echo "</a>";
                         break;
                 }

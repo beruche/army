@@ -33,5 +33,15 @@ else {
     ArmyForm::messageBox();
 }
 
+if(isset($_REQUEST['id'])) {
+    if (!isset($user)) {
+        $user = null;
+    }
+    $projectID = $_REQUEST['id'];
+    ArmyForm::displayProjectPage($projectID, $user);
+}
+else {
+   echo "<p>You didn't select a project to review.</p>";
+}
 
 require 'footer.html';

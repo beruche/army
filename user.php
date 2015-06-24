@@ -33,5 +33,17 @@ else {
     ArmyForm::messageBox();
 }
 
+if(isset($_REQUEST['username'])) {
+    $username = $_REQUEST['username'];
+    ArmyForm::displayUserPage($username);
+}
+else {
+    if(isset($user)) {
+        ArmyForm::displayUserPage($user);
+    }
+    else {
+        // explain that they are not logged in and haven't selected a user to review.
+    }
+}
 
 require 'footer.html';
