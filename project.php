@@ -41,7 +41,10 @@ if(isset($_REQUEST['id'])) {
     ArmyForm::displayProjectPage($projectID, $user);
 }
 else {
-   echo "<p>You didn't select a project to review.</p>";
+    echo "<p>You didn't select a project to review.</p>";
 }
 
 require 'footer.html';
+
+
+

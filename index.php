@@ -33,5 +33,12 @@ else {
     ArmyForm::messageBox();
 }
 
+echo "<div class='jumbotron'>";
+echo "<h1>Muster Station</h1>";
+echo "<p>Need help getting your miniatures army ready for the table?</p>";
+echo "</div>";
+echo "<p>This is some text.</p>";
+echo "<p>This is another text.</p>";
+
 
 require 'footer.html';

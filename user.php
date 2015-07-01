@@ -42,7 +42,7 @@ else {
         ArmyForm::displayUserPage($user);
     }
     else {
-        // explain that they are not logged in and haven't selected a user to review.
+        ArmyForm::redirect('error', "You are not logged in and/or haven't selected a user to view.", "index");
     }
 }
 

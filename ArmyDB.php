@@ -46,6 +46,16 @@ class ArmyDB {
         return $units;
     }
 
+    public static function retrieveUnit($unitID) {
+        $unit = R::load('unit', $unitID);
+
+        if (empty($unit)) {
+            throw new Exception("Unit $unitID has no units assigned.");
+        }
+
+        return $unit;
+    }
+
     public static function retrieveProjectsFromUser($usr) {
         $projects = R::find('project', 'username = "' . $usr . '"');
 
@@ -75,7 +85,7 @@ class ArmyDB {
      * Addition functions
      */
 
-    public static function addUser($usr, $password, $email, $fname, $lname, $prefcolor) {
+    public static function addUser($usr, $password, $email, $fname, $lname) {
         try {
             $user = R::dispense('user');
             $user->username = trim($usr);
@@ -83,7 +93,6 @@ class ArmyDB {
             $user->email = trim($email);
             $user->fname = trim($fname);
             $user->lname = trim($lname);
-            $user->prefcolor = trim($prefcolor);
 
             $id = R::store($user);
         }
@@ -138,7 +147,7 @@ class ArmyDB {
             $project->description = $description;
             $project->date_added = $dateAdded;
 
-            $projectid = R::store('project');
+            $projectid = R::store($project);
 
             return $projectid;
 
@@ -213,11 +222,11 @@ class ArmyDB {
             }
 
             if (!is_null($unitname)) {
-                $unit->unitname = $unitname;
+                $unit->name = $unitname;
             }
 
             if (!is_null($qty)) {
-                $unit->qty = $$qty;
+                $unit->qty = $qty;
             }
 
             if (!is_null($pts)) {
@@ -367,7 +376,26 @@ class ArmyDB {
         }
     }
 
+    public static function deleteProject($projectid) {
+        $unit = R::load('project', $projectid);
 
+        if(empty($unit)) {
+            throw new Exception ("Project ID $projectid does not exist!");
+        }
+        else {
+            R::trash($unit);
+        }
+    }
+
+    public static function retrieveUserIDfromUnitID($unitID) {
+        try {
+            $unit = self::retrieveUnit($unitID);
+            return self::retrieveUserNameFromProject($unit['projectid']);
+        }
+        catch (Exception $e) {
+            throw new Exception("User ID $unitID doesn't exist, or otherwise unable to get user name.");
+        }
+    }
 
 
 

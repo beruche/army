@@ -13,12 +13,10 @@ R::setup('sqlite:army.db');
 //R::debug(TRUE);
 
 try {
-    ArmyDB::addUnit(2, "Eldar Guardians", 10, 120, 0, null);
 
-
+    ArmyDB::updateUnit(19,"Chaplain",1,120,131,"Scary skull captain that likes to hit things!");
 }
 catch (Exception $e) {
-    echo $e->getMessage();
+    echo "Unable to create project. " . $e->getMessage();
 }
-
 

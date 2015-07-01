@@ -1,4 +1,49 @@
-<div>&nbsp;</div></div> <!-- div.container -->
+<div>&nbsp;</div>
+
+
+
+<div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Create an Account!</h4>
+            </div>
+            <div class="modal-body">
+                <form role='form' method='post' action='action.php'>
+                    <div class='form-group'>
+                        <label for='tmpUsr'>Username: </label>
+                        <input type='text' class='form-control' id='tmpUsr' name='tmpUsr' required>
+                    </div>
+                    <div class='form-group'>
+                        <label for='tmpPwd'>Password: </label>
+                        <input type='password' class='form-control' id='tmpPwd' name='tmpPwd' required>
+                    </div>
+                    <div class='form-group'>
+                        <label for='tmpEmail'>Email Address: </label>
+                        <input type='email' class='form-control' id='tmpEmail' name='tmpEmail' required>
+                    </div>
+                    <div class='form-group'>
+                        <label for='fname'>First Name: </label>
+                        <input type='text' class='form-control' id='fname' name='fname' required>
+                    </div>
+                    <div class='form-group'>
+                        <label for='lname'>Last Name: </label>
+                        <input type='text' class='form-control' id='lname' name='lname' required>
+                    </div>
+                    <input type='hidden' name='action' value='createUser'>
+                    <input type='submit' class='btn btn-warning' value='Create Account'>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+</div> <!-- div.container -->
+
 <footer class="navbar navbar-inverse">
     <div class="container-fluid">
         <div class="navbar-header navbar-right">

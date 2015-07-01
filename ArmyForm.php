@@ -8,6 +8,7 @@
 
 require 'ArmyDB.php';
 
+
 class ArmyForm {
 
 
@@ -24,9 +25,6 @@ class ArmyForm {
             if ($user == null) {
                 echo "<div class='alert alert-info' role='alert'>Welcome! Please log in or create a new account to continue.</div>";
             }
-            else {
-                echo "<div class='alert alert-warning' role='alert'>Welcome, $user!</div>";
-            }
         } else {
             switch ($action) {
                 case "error":
@@ -36,7 +34,6 @@ class ArmyForm {
                     echo '<div class="alert alert-success" role="alert">' . $_REQUEST['msg'] . '</div>';
                     break;
                 default:
-                    echo "<div class='alert alert-info' role='alert'>Welcome, $user!</div>";
                     break;
             }
         }
@@ -48,7 +45,7 @@ class ArmyForm {
         echo '<nav class="navbar navbar-inverse">';
         echo '<div class="container-fluid">';
         echo '<div class="navbar-header">';
-        echo '<a class="navbar-brand" href="index.php">ARMY BUILDER</a>';
+        echo '<a class="navbar-brand" href="index.php">MUSTER STATION</a>';
         echo '</div><div>';
 
         if ($isLoggedIn) {
@@ -122,10 +119,12 @@ class ArmyForm {
         else {
             echo "<form class='navbar-form navbar-right' role='form' action='login.php'>";
             echo "<div class='form-group'>";
-            echo "<input type='text' name='usr' class='form-control' placeholder='Username...' required>";
-            echo "<input type='password' name='pwd' class='form-control' placeholder='Password...' required>";
-            echo "<input type='hidden' name='action' value='login'><input type='submit' class='btn btn-default'>";
+            echo "<input type='text' name='usr' class='form-control' placeholder='Username...' style='margin-right:10px;' required>";
+            echo "<input type='password' name='pwd' class='form-control' placeholder='Password...' style='margin-right:10px;' required>";
+            echo "<input type='hidden' name='action' value='login'><input type='submit' class='btn btn-warning' value='Login' style='margin-right:10px;' >";
+            echo "<button type='button' class='btn btn-danger' data-toggle='modal' data-target='#myModal'>Create Account</button>";
             echo "</div></form>";
+            echo "</ul>";
         }
         echo "</div></div></div></nav>";
         echo "<div class='container-fluid'>";
@@ -175,7 +174,6 @@ class ArmyForm {
             case "login": $page = "login.php"; break;
             case "user":  $page = "user.php"; break;
             case "project": $page = "project.php"; break;
-            case "create": $page = "create.php"; break;
             case "unit": $page = "unit.php"; break;
             default: $page = "index.php"; break;
 
@@ -253,6 +251,24 @@ class ArmyForm {
         echo "</div>";
     }
 
+    static function displayUnitPage($unitID, $loggedinuser) {
+        echo "<div class='row'>";
+        echo "<div class='col-xs-12 col-md-9' id='main'><!--unit information-->";
+
+        try {
+            self::editUnitInformation($unitID, $loggedinuser);
+        }
+        catch (Exception $e) {
+            self::displayUnitInformation($unitID);
+        }
+
+        echo "</div><!--end.unit information-->";
+        echo "<div class='col-xs-6 col-md-3' id='news'><!--news information-->";
+        self::displayNews();
+        echo "</div><!--end.news information-->";
+        echo "</div><!-- displayUnitPage -->";
+    }
+
     static function displayProjects($user) {
         echo "<div id='displayProjects' class='container-fluid'>";
         echo "<h1>My projects</h1>";
@@ -285,11 +301,10 @@ class ArmyForm {
 
                 echo "<tr>";
                 echo "<td>$count</td>";
-                echo "<td>$projectname</td>";
+                echo "<td><a href='project.php?id=" . $projectid . "'>$projectname</a></td>";
                 echo "<td>$battlegroup</td>";
                 echo "<td>$points</td>";
-                echo "<td><a href='project.php?id=" . $projectid . "'><span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a></td>";
-                echo "<td><a href='project.php?action=delete&id=" . $projectid . "'><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td>";
+                echo "<td><a href='action.php?action=deleteProject&id=" . $projectid . "'><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td>";
                 echo "</tr>";
             }
         }
@@ -298,13 +313,13 @@ class ArmyForm {
         }
 
         // add project
-        echo "<form role='form' method='post' action='project.php'><tr>";
+        echo "<form role='form' method='post' action='action.php'><tr>";
         echo "<td><span class='glyphicon glyphicon-plus' aria-hidden='true'></span></td>";
-        echo "<td><input type='text' class='form-control' id='projname' placeholder='Project Name' required></td>";
-        echo "<td><input type='text' class='form-control' id='btlgrp' placeholder='Battlegroup' required></td>";
+        echo "<td><input type='text' class='form-control' name='projname' placeholder='Project Name' required></td>";
+        echo "<td><input type='text' class='form-control' name='btlgrp' placeholder='Battlegroup' required></td>";
         echo "<td colspan='3' class='text-center'><input type='submit' class='btn btn-default' value='Create!'></td>";
         echo "<input type='hidden' name='submitter' value='$user'>";
-        echo "<input type='hidden' name='action' value='createProject'>";
+        echo "<input type='hidden' name='action' value='createProject'></form>";
         echo "</tr>";
 
         echo "</table>";
@@ -333,8 +348,6 @@ class ArmyForm {
             echo $e->getMessage();
         }
 
-
-
         try {
             $units = ArmyDB::retrieveUnitsFromProject($projectid);
             $count = 0;
@@ -352,11 +365,10 @@ class ArmyForm {
                 echo "<tr>";
                 echo "<td>$count</td>";
                 echo "<td>$qty</td>";
-                echo "<td>$unitname</td>";
+                echo "<td><a href='unit.php?id=" . $unitID . "'>$unitname</a></td>";
                 echo "<td>$pts</td>";
                 echo "<td>$status</td>";
-                echo "<td><a href='unit.php?id=" . $unitID . "'><span class='glyphicon glyphicon-edit' aria-hidden='true'></span></a></td>";
-                echo "<td><a href='unit.php?action=deleteUnit&projectid=" . $projectid . "&id=" . $unitID . "'><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td>";
+                echo "<td><a href='action.php?action=deleteUnit&projectid=" . $projectid . "&id=" . $unitID . "'><span class='glyphicon glyphicon-remove' aria-hidden='true'></span></a></td>";
                 echo "</tr>";
             }
         }
@@ -365,7 +377,7 @@ class ArmyForm {
         }
 
         // add unit
-        echo "<form role='form' method='post' action='unit.php'><tr>";
+        echo "<form role='form' method='post' action='action.php'><tr>";
         echo "<td><span class='glyphicon glyphicon-plus' aria-hidden='true'></span></td>";
         echo "<td><input type='text' class='form-control' name='qty' placeholder='#' required></td>";
         echo "<td><input type='text' class='form-control' name='unitname' placeholder='Unit Name' required></td>";
@@ -377,14 +389,554 @@ class ArmyForm {
 
         echo "</table>";
         echo "</div><!-- /div.displayProjects-->";
+    }
 
 
+    static function displayUnitInformation($unitid) {
+
+        $unit = ArmyDB::retrieveUnit($unitid);
+
+        //var_dump($unit);
+
+        $unitname = $unit['name'];
+
+        $unitqty = $unit['qty'];
+
+        $unitpts = $unit['pts'];
+        if ($unitpts == 1) {
+            $pts = "pt";
+        }
+        else {
+            $pts = "pts";
+        }
+
+        $unitstatus = $unit['status'];
+        if ($unitstatus == 0) {
+            $assembleStatus = 0;
+            $baseStatus = 0;
+            $paintStatus = 0;
+        }
+        else {
+            $statusArray = str_split($unitstatus);
+            $assembleStatus = $statusArray[0];
+            $baseStatus = $statusArray[1];
+            $paintStatus = $statusArray[2];
+        }
+
+        $unitprojectid = $unit['projectid'];
+
+        $unitdateadded = $unit['date_added'];
+
+        $editable = false;
+
+        $unitnotes = $unit['notes'];
+        if (empty($unitnotes)) {
+            $unitnotes = "No notes entered yet.";
+        }
+
+        $project = ArmyDB::retrieveProjectInfo($unitprojectid);
+        $projectname = $project['projectname'];
+        $battlegroup = $project['battlegroup'];
+
+        echo "<div class='row'>";
+        echo "<div class='col-xs-6' id='unitinfo'>";
+        echo "<h1>$unitqty $unitname ($unitpts" . $pts . ")</h1>";
+        echo "<h4><em>$projectname - $battlegroup</em></h4>";
+        echo "</div>";
+        echo "<div class='col-xs-6' id='status'>";
+        echo "<form id='paintintable'>";
+        echo "<fieldset disabled>";
+
+        echo "<label for='assembleStatus'>Assembly Status</label>";
+        echo "<select id='assembleStatus' name='assembleStatus' class='form-control'>";
+        switch ($assembleStatus) {
+            case 0:
+                echo "<option value='0' selected>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1' selected>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+            case 2:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2' selected>Assembled</option>";
+                break;
+            default:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+        }
+        echo "</select>";
+        echo "<label for='paintStatus'>Painting Status</label>";
+        echo "<select id='paintStatus' name='paintStatus' class='form-control'>";
+        switch ($paintStatus) {
+            case 0:
+                echo "<option value='0' selected>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1' selected>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 2:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2' selected>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 3:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3' selected>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 4:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4' selected>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 5:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5' selected>Detail Highlight</option>";
+                break;
+            default:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+        }
+        echo "</select>";
+        echo "<label for='assembleStatus'>Basing Status</label>";
+        echo "<select id='assembleStatus' class='form-control'>";
+        switch ($baseStatus) {
+            case 0:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Not based</option>";
+                echo "<option value='1' selected>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 2:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2' selected>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 3:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3' selected>Highlighted basing</option>";
+                break;
+            default:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+        }
+        echo "</select>";
+        echo "</fieldset></form>";
+
+        echo "</div>";
+        echo "</div><!-- displayUnitPage -->";
+        echo "<div class='row'><p>&nbsp;</p><div class='well'>$unitnotes</div></div>";
+    }
+
+    static function editUnitInformation($unitid, $loggedinuser) {
+        $unit = ArmyDB::retrieveUnit($unitid);
+
+        //var_dump($unit);
+
+        $unitname = $unit['name'];
+
+        $unitqty = $unit['qty'];
+
+        $unitpts = $unit['pts'];
+        if ($unitpts == 1) {
+            $pts = "pt";
+        }
+        else {
+            $pts = "pts";
+        }
+
+        $unitstatus = $unit['status'];
+        if ($unitstatus == 0) {
+            $assembleStatus = 0;
+            $baseStatus = 0;
+            $paintStatus = 0;
+        }
+        else {
+            $statusArray = str_split($unitstatus);
+            $assembleStatus = $statusArray[0];
+            $baseStatus = $statusArray[1];
+            $paintStatus = $statusArray[2];
+        }
+
+        $unitprojectid = $unit['projectid'];
+        $project = ArmyDB::retrieveProjectInfo($unitprojectid);
+
+
+        $projectname = $project['projectname'];
+        $battlegroup = $project['battlegroup'];
+
+        $unitdateadded = $unit['date_added'];
+
+        $editable = false;
+
+        $unitowner = $project['username'];
+        //var_dump($unitowner);
+        if ($unitowner != $loggedinuser) {
+            throw new Exception("Unit is owned by $unitowner, but $loggedinuser wants to edit. Can't do that.");
+        }
+
+        $unitnotes = $unit['notes'];
+        if (empty($unitnotes)) {
+            $unitnotes = "No notes entered yet.";
+        }
+
+        $unitadded = $unit['date_added'];
+        $unitedited = $unit['date_edited'];
+
+
+
+        echo "<form role='form' method='post' action='action.php'>";
+        echo "<div class='row'>";
+
+
+        echo "<h1>Edit a unit!</h1>";
+        echo "<div class='col-xs-6' id='unitinfo'>";
+
+        echo "<div class='form-group'>";
+        echo "<label for='qty'>Quantity:</label>";
+        echo "<input type='text' class='form-control' id='qty' name='qty' value='" . $unitqty . "'>";
+        echo "</div>";
+
+        echo "<div class='form-group'>";
+        echo "<label for='unitname'>Unit Name:</label>";
+        echo "<input type='text' class='form-control' id='unitname' name='unitname' value='" . $unitname . "'>";
+        echo "</div>";
+
+        echo "<div class='form-group'>";
+        echo "<label for='qty'>Points</label>";
+        echo "<input type='text' class='form-control' id='pts' name='pts' value='" . $unitpts . "'>";
+        echo "</div>";
+
+        echo "<label for='assembleStatus'>Assembly Status</label>";
+        echo "<select id='assembleStatus' name='assembleStatus' class='form-control'>";
+        switch ($assembleStatus) {
+            case 0:
+                echo "<option value='0' selected>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1' selected>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+            case 2:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2' selected>Assembled</option>";
+                break;
+            default:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+        }
+        echo "</select>";
+        echo "<label for='paintStatus'>Painting Status</label>";
+        echo "<select id='paintStatus' name='paintStatus' class='form-control'>";
+        switch ($paintStatus) {
+            case 0:
+                echo "<option value='0' selected>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1' selected>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 2:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2' selected>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 3:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3' selected>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 4:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4' selected>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 5:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5' selected>Detail Highlight</option>";
+                break;
+            default:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+        }
+        echo "</select>";
+        echo "<label for='baseStatus'>Basing Status</label>";
+        echo "<select id='baseStatus' name='baseStatus' class='form-control'>";
+        switch ($baseStatus) {
+            case 0:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Not based</option>";
+                echo "<option value='1' selected>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 2:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2' selected>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 3:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3' selected>Highlighted basing</option>";
+                break;
+            default:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painting basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+        }
+        echo "</select>";
+        echo "</div>";
+        echo "<div class='col-xs-6' id='unitnotes'>";
+        echo "<div class='form-group'>";
+        echo "<label for='unitnotes'>Unit Notes</label>";
+        echo "<textarea class='form-control' rows='10' id='unitnotes' name='unitnotes'>$unitnotes</textarea>";
+        echo "</div>";
+        echo "<div class='form-group'>";
+        echo "<input type='submit' class='btn btn-warning' value='Submit Edits!'></td>";
+        echo "</div>";
+        echo "<input type='hidden' name='action' value='editUnit'>";
+        echo "<input type='hidden' name='unitid' value='" . $unitid . "'>";
+        echo "</form>";
+        echo "<ul>";
+        echo "<li>Date added: $unitadded</li>";
+        if (!empty($unitedited)) {
+            echo "<li>Date updated: $unitedited</li>";
+        }
+        echo "</ul>";
+        echo "</div></div>";
+
+    }
+
+
+    static function displayPaintingTable($assembleStatus, $baseStatus, $paintStatus) {
+        echo "<form id='paintintable'>";
+        echo "<fieldset disabled>";
+
+        echo "<label for='assembleStatus'>Assembly Status</label>";
+        echo "<select id='assembleStatus' name='assembleStatus' class='form-control'>";
+        switch ($assembleStatus) {
+            case 0:
+                echo "<option value='0' selected>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1' selected>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+            case 2:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2' selected>Assembled</option>";
+                break;
+            default:
+                echo "<option value='0'>Unassembled</option>";
+                echo "<option value='1'>Partially Assembled</option>";
+                echo "<option value='2'>Assembled</option>";
+                break;
+        }
+        echo "</select>";
+        echo "<label for='paintStatus'>Painting Status</label>";
+        echo "<select id='paintStatus' name='paintStatus' class='form-control'>";
+        switch ($paintStatus) {
+            case 0:
+                echo "<option value='0' selected>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1' selected>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 2:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2' selected>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 3:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3' selected>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 4:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4' selected>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+            case 5:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5' selected>Detail Highlight</option>";
+                break;
+            default:
+                echo "<option value='0'>Bare</option>";
+                echo "<option value='1'>Primed</option>";
+                echo "<option value='2'>Basecoat</option>";
+                echo "<option value='3'>Shade / Washd</option>";
+                echo "<option value='4'>Basic Highlight</option>";
+                echo "<option value='5'>Detail Highlight</option>";
+                break;
+        }
+        echo "</select>";
+        echo "<label for='assembleStatus'>Basing Status</label>";
+        echo "<select id='assembleStatus' class='form-control'>";
+        switch ($baseStatus) {
+            case 0:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painted basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 1:
+                echo "<option value='0'>Not based</option>";
+                echo "<option value='1' selected>Bare basing</option>";
+                echo "<option value='2'>Painted basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 2:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2' selected>Painted basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+            case 3:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painted basing</option>";
+                echo "<option value='3' selected>Highlighted basing</option>";
+                break;
+            default:
+                echo "<option value='0' selected>Not based</option>";
+                echo "<option value='1'>Bare basing</option>";
+                echo "<option value='2'>Painted basing</option>";
+                echo "<option value='3'>Highlighted basing</option>";
+                break;
+        }
+        echo "</select>";
+        echo "</fieldset></form>";
+        echo "<!--paintingtable -->";
 
 
     }
 
+
+
+
+
+
+
     static function displayNews() {
-        echo "<div id='displayProjects' class='container-fluid'>";
+        echo "<div id='displayNews' class='container-fluid'>";
         echo "<h1>Recent Updates</h1>";
 
         try {
@@ -421,6 +973,27 @@ class ArmyForm {
                         echo "<a href='#' class='list-group-item'>";
                         echo "<h4 class='list-group-item-heading'>Unit deleted!</h4>";
                         echo "<p class='list-group-item-text'>" . $newsuser . " deleted unit " . $newsunitid . " from project " . $newsprojectid . "!</p>";
+                        echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
+                        echo "</a>";
+                        break;
+                    case "addProject":
+                        echo "<a href='#' class='list-group-item'>";
+                        echo "<h4 class='list-group-item-heading'>Project added!</h4>";
+                        echo "<p class='list-group-item-text'>" . $newsuser . " added project " . $newsprojectid . "!</p>";
+                        echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
+                        echo "</a>";
+                        break;
+                    case "deleteProject":
+                        echo "<a href='#' class='list-group-item'>";
+                        echo "<h4 class='list-group-item-heading'>Project deleted!</h4>";
+                        echo "<p class='list-group-item-text'>" . $newsuser . " deleted project " . $newsprojectid . "!</p>";
+                        echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
+                        echo "</a>";
+                        break;
+                    case "editUnit":
+                        echo "<a href='#' class='list-group-item'>";
+                        echo "<h4 class='list-group-item-heading'>Unit updated!</h4>";
+                        echo "<p class='list-group-item-text'>" . $newsuser . " updated unit " . $newsunitid . "!</p>";
                         echo "<p class='list-group-item-text text-right small'>$newsdate</p>";
                         echo "</a>";
                         break;
