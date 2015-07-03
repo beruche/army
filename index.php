@@ -38,9 +38,6 @@ echo "<h1>Muster Station</h1>";
 echo "<p>Need help getting your miniatures army ready for the table?</p>";
 echo "</div>";
 echo "<div class='row'>";
-echo "<p>This is some text.</p>";
-echo "<p>This is another text.</p>";
-echo "</div>";
 echo "<div class='col-xs-12' id='display'>";
 echo "<div class='col-xs-12 col-md-4' id='users'>";
 echo "<h1>Users</h1>";
@@ -84,6 +81,7 @@ try {
 catch (Exception $e) {
     echo "<p>No units available</p>";
 }
+echo "</div><!-- Row -->";
 echo "</div><!-- Units -->";
 
 echo "</div><!-- display -->";

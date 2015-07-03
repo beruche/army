@@ -583,4 +583,8 @@ class ArmyDB {
     public static function retrieveNotesByProjectID($projectID) {
         return R::find('note', 'projectid = ' . $projectID);
     }
+
+    public static function retrieveUserInformation($user) {
+        return R::find('user', 'username = ? ', [  $user ]);
+    }
 }

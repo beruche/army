@@ -12,5 +12,7 @@ require 'ArmyForm.php';
 R::setup('sqlite:army.db');
 //R::debug(TRUE);
 
+$username = "test123";
+$user = ArmyDB::retrieveUserInformation($username);
 
-ArmyForm::displayNotes(4);
+var_dump($user);

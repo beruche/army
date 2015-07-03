@@ -333,6 +333,30 @@ class ArmyForm
 
             $projectowner = $project['username'];
 
+            $projectownerdetail = ArmyDB::retrieveUserInformation($projectowner);
+            foreach ($projectownerdetail as $projectownerdetails) {
+                if (isset($projectownerdetails['private'])) {
+                    $isprivate = $projectownerdetails['private'];
+                }
+                else {
+                    $isprivate = false;
+                }
+                if ($isprivate) {
+                    $projectownerlocation = "Not set.";
+                    $projectownername = "Not set.";
+                }
+                else {
+                    //var_dump($projectownerdetails);
+                    $projectownername = $projectownerdetails['fname'] . " " . $projectownerdetails['lname'];
+                    if (isset($projectownerdetails['location'])) {
+                        $projectownerlocation = $projectownerdetails['location'];
+                    }
+                    else {
+                        $projectownerlocation = "Not set.";
+                    }
+                }
+            }
+
             $editable = false;
             if ($projectowner == $loggedinuser) {
                 $editable = true;
@@ -350,7 +374,7 @@ class ArmyForm
             echo "<div class='row' id='topRow'>";
             echo "<div id='displayProjectInformation' class='col-xs-12 col-md-9'>";
             echo "<h1>$projectname ($totalPoints pts)</h1>";
-            echo "<h4>$projectgroup - $projectgame</h3>";
+            echo "<h3>$projectgroup - $projectgame</h3>";
             echo "<p>$description</p>";
             echo "</div><!-- displayProjectInformation -->";
             echo "<div id='image' class='col-xs-12 col-md-3'>";
@@ -362,6 +386,18 @@ class ArmyForm
             echo "<div id='stats' class='col-xs-12 col-md-4'>";
             echo "<h3>Statistics</h3>";
             echo "<dl class='dl-horizontal'>";
+            if ($totalUnits == 0) {
+                echo "<dt># of units:</dt>";
+                echo "<dd>0</dd>";
+                echo "<dt># of points:</dt>";
+                echo "<dd>0</dd>";
+            }
+            else {
+                echo "<dt># of units:</dt>";
+                echo "<dd>$totalUnits</dd>";
+                echo "<dt># of points:</dt>";
+                echo "<dd>$totalPoints</dd>";
+            }
             echo "<dt># of units:</dt>";
             echo "<dd>$totalUnits</dd>";
             echo "<dt># of points:</dt>";
@@ -376,10 +412,20 @@ class ArmyForm
             echo "<div id='status' class='col-xs-12 col-md-4'>";
             echo "<h3>Completion</h3>";
             echo "<dl class='dl-horizontal'>";
-            echo "<dt>Completion (by units):</dt>";
-            echo "<dd>" . ArmyDB::calculateProjectStatusByUnits($projectid) . "%</dd>";
-            echo "<dt>Completion (by points):</dt>";
-            echo "<dd>" . ArmyDB::calculateProjectStatusByPts($projectid) . "%</dd>";
+            echo "<dt>(by units):</dt>";
+            try {
+                echo "<dd>" . ArmyDB::calculateProjectStatusByUnits($projectid) . "%</dd>";
+            }
+            catch (Exception $e) {
+                echo "<dd>0.0%</dd>";
+            }
+            echo "<dt>(by points):</dt>";
+            try {
+                echo "<dd>" . ArmyDB::calculateProjectStatusByPts($projectid) . "%</dd>";
+            }
+            catch (Exception $e) {
+                echo "<dd>0.0%</dd>";
+            }
             echo "</dl>";
             echo "</div><!-- status -->";
 
@@ -464,9 +510,9 @@ class ArmyForm
                 echo "<div id='userInfo' class='col-xs-12 col-md-4'>";
                 echo "<h3>User Information</h3>";
                 echo "<ul>";
-                echo "<li>Username: XXX</li>";
-                echo "<li>Full Name: XXX</li>";
-                echo "<li>Location: XXX</li>";
+                echo "<li>Username: <a href='user.php?username=" . $projectowner . "'>$projectowner</a></li>";
+                echo "<li>Full Name: $projectownername</li>";
+                echo "<li>Location: $projectownerlocation</li>";
                 echo "</ul>";
                 echo "</div><!-- userInfo -->";
             }
@@ -949,38 +995,49 @@ class ArmyForm
         } else {
             $notes = ArmyDB::retrieveNotesByProjectID($projectID);
         }
+        //var_dump($unitID);
+        //var_dump($notes);
 
         echo "<div class='row'>";
         echo "<h1>Comments</h1>";
-        foreach ($notes as $note) {
-            //var_dump($note);
-            $poster = $note['poster'];
-            $notetext = $note['text'];
-            $dateadded = $note['date_added'];
-
+        if (empty($notes)) {
             echo "<div class='list-group col-xs-6 col-md-3'>";
             echo "<a href='#' class='list-group-item'>";
-            echo "<li class='list-group-item list-group-item'>$notetext</li>";
-            echo "<li class='list-group-item list-group-item-danger'>Posted by $poster<br>$dateadded</li>";
+            echo "<li class='list-group-item list-group-item'>No notes have been created for this.</li>";
             echo "</ul>";
             echo "</div>";
-            
-            
         }
+        else {
+            foreach ($notes as $note) {
+                //var_dump($note);
+                $poster = $note['poster'];
+                $notetext = $note['text'];
+                $dateadded = $note['date_added'];
+
+                echo "<div class='list-group col-xs-6 col-md-3'>";
+                echo "<a href='user.php?username=" . $poster . "' class='list-group-item'>";
+                echo "<li class='list-group-item list-group-item'>$notetext</li>";
+                echo "<li class='list-group-item list-group-item-danger'>Posted by $poster<br>$dateadded</li>";
+                echo "</ul>";
+                echo "</div>";
+            }
+        }
+
 
         if (ArmyForm::checkForLogIn()) {
             $poster = $_SESSION['username'];
             echo "<div class='col-xs-6 col-md-3'>";
             echo "<div class='list-group'>";
             echo "<a href='#' class='list-group-item'>";
-            echo "<h3>Post a comment!</h3>";
             echo "<form role='form' method='post' action='action.php'>";
-            echo "<textarea class='form-control' rows='10' id='desc' name='notetext' placeholder='Post your note here!'></textarea>";
+            echo "<textarea class='form-control' rows='3' id='desc' name='notetext' placeholder='Post your note here!'></textarea>";
             if (isset($unitID)) {
                 echo "<input type='hidden' name='unitid' value='$unitID'>";
             }
+            else {
+                echo "<input type='hidden' name='projectid' value='$projectID'>";
+            }
             echo "<input type='hidden' name='action' value='addNote'>";
-            echo "<input type='hidden' name='projectid' value='$projectID'>";
             echo "<input type='hidden' name='poster' value='$poster'><input type='submit' class='btn btn-default'>";
             echo "</form>";
             echo "<p class='list-group-item-text'></p>";
