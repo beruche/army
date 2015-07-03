@@ -7,16 +7,10 @@
  */
 
 require 'rb.php';
-require 'ArmyDB.php';
+require 'ArmyForm.php';
 
 R::setup('sqlite:army.db');
 //R::debug(TRUE);
 
-try {
 
-    ArmyDB::updateUnit(19,"Chaplain",1,120,131,"Scary skull captain that likes to hit things!");
-}
-catch (Exception $e) {
-    echo "Unable to create project. " . $e->getMessage();
-}
-
+ArmyForm::displayNotes(4);

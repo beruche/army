@@ -120,9 +120,28 @@ switch ($action) {
         $projectid = $_REQUEST['id'];
 
         try {
+            ArmyDB::deleteAllUnits($projectid);
             ArmyDB::deleteProject($projectid);
             ArmyDB::addNewsItem($user, "deleteProject", $projectid);
             ArmyForm::redirect('success', "Project ID $projectid has been deleted!", 'user');
+        }
+        catch (Exception $e) {
+            ArmyForm::redirect('error', "Unable to delete project. " . $e->getMessage(), 'user');
+        }
+
+        break;
+
+    case "editProject":
+        $projectid = $_REQUEST['id'];
+        $projectname = $_REQUEST['projectname'];
+        $battlegroup = $_REQUEST['btlgrp'];
+        $gamegroup = $_REQUEST['gamegrp'];
+        $desc = $_REQUEST['desc'];
+
+        try {
+            ArmyDB::updateProject($projectid, $projectname, $battlegroup, $gamegroup, $desc);
+            ArmyDB::addNewsItem($user, "updateProject", $projectid);
+            ArmyForm::redirect('success', "Project ID $projectid has been updated!", 'user');
         }
         catch (Exception $e) {
             ArmyForm::redirect('error', "Unable to delete project. " . $e->getMessage(), 'user');
@@ -136,8 +155,6 @@ switch ($action) {
      * User Selections
      */
     case "createUser":
-        echo "yay!";
-
         $user = $_REQUEST['tmpUsr'];
         $pwd = $_REQUEST['tmpPwd'];
         $email = $_REQUEST['tmpEmail'];
@@ -153,6 +170,34 @@ switch ($action) {
         catch (Exception $e) {
             ArmyForm::redirect('error', "Unable to create user. " . $e->getMessage(), 'index');
         }
+        break;
+
+    case "addNote":
+        $poster = $_REQUEST['poster'];
+        $notetext = $_REQUEST['notetext'];
+        //var_dump($_REQUEST);
+        $projectid = $_REQUEST['projectid'];
+        if(isset($_REQUEST['unitid'])) {
+            $unitid = $_REQUEST['unitid'];
+        }
+        else {
+            $unitid = null;
+        }
+
+        try {
+            ArmyDB::addNote($poster, $unitid, $projectid, $notetext);
+            ArmyDB::addNewsItem($poster, "addNote", $projectid, $unitid);
+            if (!is_null($unitid)) {
+                ArmyForm::redirect('success', "Note posted!", 'unit', $unitid);
+            }
+            else {
+                ArmyForm::redirect('success', "Note posted!", 'project', $projectid);
+            }
+        }
+        catch (Exception $e) {
+            ArmyForm::redirect('error', "Unable to add note. " . $e->getMessage(), 'user');
+        }
+
         break;
 
     default:

@@ -50,10 +50,32 @@ class ArmyDB {
         $unit = R::load('unit', $unitID);
 
         if (empty($unit)) {
-            throw new Exception("Unit $unitID has no units assigned.");
+            throw new Exception("Unit $unitID does not exist.");
         }
 
         return $unit;
+    }
+
+    public static function retrieveUnitTitle($unitID) {
+        try {
+            $unit = ArmyDB::retrieveUnit($unitID);
+            //var_dump($unit);
+            return $unit['name'];
+        }
+        catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
+    }
+
+    public static function retrieveProjectTitle($projectID) {
+        try {
+            $project = ArmyDB::retrieveProjectInfo($projectID);
+            //var_dump($unit);
+            return $project['projectname'];
+        }
+        catch (Exception $e) {
+            throw new Exception($e->getMessage());
+        }
     }
 
     public static function retrieveProjectsFromUser($usr) {
@@ -393,12 +415,172 @@ class ArmyDB {
             return self::retrieveUserNameFromProject($unit['projectid']);
         }
         catch (Exception $e) {
-            throw new Exception("User ID $unitID doesn't exist, or otherwise unable to get user name.");
+            throw new Exception("Unit ID $unitID doesn't exist, or otherwise unable to get user name.");
         }
     }
 
+    public static function doesUnitExist($unitID) {
+        try {
+            $unit = self::retrieveUnit($unitID);
+            if (!$unit['id'] == 0) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (Exception $e) {
+            throw new Exception("Unit $unitID does not exist.");
+        }
+    }
 
+    public static function doesProjectExist($projectID) {
+        try {
+            $project = self::retrieveProjectInfo($projectID);
+            if (!empty($project)) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (Exception $e) {
+            throw new Exception("Unit $projectID does not exist.");
+        }
+    }
 
+    public static function convertStatusToDecimal($status) {
+        $statusarray = self::convertStatusToArray($status);
+        return $statusarray[0] + $statusarray[1] + $statusarray[2];
+    }
+    public static function convertStatusToArray($status) {
+        if ($status == 0) {
+            $statusArray = [0, 0, 0];
+        }
+        else {
+            $statusArray = str_split($status);
+        }
 
+        return $statusArray;
+    }
 
+    public static function convertStatusToText($status, $text) {
+        switch ($text) {
+            case "assemble":
+                switch ($status) {
+                    case 0: return "Unassembled";
+                    case 1: return "Partially assembled";
+                    case 2: return "Assembled";
+                    default: return "Assemble: Not sure what you're trying to do.";
+                }
+                break;
+            case "paint":
+                switch ($status) {
+                    case 0: return "Bare";
+                    case 1: return "Primed";
+                    case 2: return "Basecoat";
+                    case 3: return "Shade / washed";
+                    case 4: return "Basic highlight";
+                    case 5: return "Detail highlight";
+
+                    default: return "Paint: Not sure what you're trying to do.";
+                }
+                break;
+            case "base":
+                switch ($status) {
+                    case 0: return "Not based";
+                    case 1: return "Bare basing";
+                    case 2: return "Painting basin";
+                    case 3: return "Highlighted basing";
+                    default:
+                }
+                break;
+            default:
+                return "Check your status information.";
+
+        }
+    }
+
+    public static function countUnitsInProject($projectID)
+    {
+        try {
+            $project = ArmyDB::retrieveUnitsFromProject($projectID);
+
+            //var_dump($project);
+
+            $count = 0;
+            foreach ($project as $unit) {
+                //var_dump($unit);
+                $count++;
+            }
+
+            return $count;
+        }
+        catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    public static function countPointsInProject($projectID)
+    {
+        try {
+            $project = ArmyDB::retrieveUnitsFromProject($projectID);
+            $pts = 0;
+            foreach ($project as $unit) {
+                $pts += $unit['pts'];
+            }
+
+            return $pts;
+        }
+        catch (Exception $e) {
+            return 0;
+        }
+    }
+
+    public static function calculateProjectStatusByPts($projectID) {
+        $countPts = ArmyDB::countPointsInProject($projectID);
+
+        $units = ArmyDB::retrieveUnitsFromProject($projectID);
+        $statusPts = 0;
+
+        foreach ($units as $unit) {
+            $statusPts += $unit['pts'] * (ArmyDB::convertStatusToDecimal($unit['status']) / 10);
+        }
+
+        if ($units == 0) {
+            return "0.0%";
+        }
+        else {
+            return round($statusPts/$countPts * 100,1);
+        }
+    }
+
+    public static function calculateProjectStatusByUnits($projectID) {
+        $countUnits = ArmyDB::countUnitsInProject($projectID);
+
+        if ($countUnits == 0) {
+            return "0.0";
+        }
+
+        $units = ArmyDB::retrieveUnitsFromProject($projectID);
+        $statusPts = 0;
+
+        foreach ($units as $unit) {
+            $statusPts += ArmyDB::convertStatusToDecimal($unit['status']);
+        }
+
+        if ($statusPts == 0) {
+            return "0.0";
+        }
+        return round($statusPts / ($statusPts * $countUnits) * 100, 1);
+
+    }
+
+    public static function retrieveNotesByUnitID($unitID) {
+        return R::find('note', 'unitid = ' . $unitID);
+    }
+
+    public static function retrieveNotesByProjectID($projectID) {
+        return R::find('note', 'projectid = ' . $projectID);
+    }
 }

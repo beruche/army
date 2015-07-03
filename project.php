@@ -38,7 +38,17 @@ if(isset($_REQUEST['id'])) {
         $user = null;
     }
     $projectID = $_REQUEST['id'];
-    ArmyForm::displayProjectPage($projectID, $user);
+
+    echo "<div class='row'>";
+    echo "<div class='col-xs-12 col-md-9' id='main'>";
+    ArmyForm::displayUnits($projectID, $user);
+    echo "</div>";
+    echo "<div class='col-xs-12 col-md-3' id='news'>";
+    ArmyForm::displayNews();
+    echo "</div>";
+    echo "</div>";
+
+
 }
 else {
     echo "<p>You didn't select a project to review.</p>";
