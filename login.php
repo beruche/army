@@ -1,5 +1,6 @@
 <?php
 /**
+ * This page contains the log in logic for the website. Users shouldn't be going to it directly.
  * Created by PhpStorm.
  * User: Ryan Allan
  * Date: 2015-06-08
@@ -64,7 +65,5 @@ switch ($action) {
         ArmyForm::displayCreateUser();
         break;
 }
-
-
 
 require 'footer.html';

@@ -1,7 +1,8 @@
 <?php
 /**
+ * Logs out any currently active sessions.
  * Created by PhpStorm.
- * User: Ryan
+ * User: Ryan Allan
  * Date: 6/21/2015
  * Time: 8:19 PM
  */

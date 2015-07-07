@@ -1,7 +1,8 @@
 <?php
 /**
+ * Contains all functions that are used to build the specific pages. These methods do not call the database directly.
  * Created by PhpStorm.
- * User: Ryan
+ * User: Ryan Allan
  * Date: 6/21/2015
  * Time: 6:58 PM
  */
@@ -12,7 +13,10 @@ require 'ArmyDB.php';
 class ArmyForm
 {
 
-
+    /**
+     * Displays the message box at the top of the screen if there is a message to show.
+     * @param null $user
+     */
     static function messageBox($user = null)
     {
         if (!isset($_REQUEST['action'])) {
@@ -39,6 +43,13 @@ class ArmyForm
         }
     }
 
+    /**
+     * Displays the common header between all pages, depending on whether someone is logged in or not.
+     * If logged in, header will display a dropdown for projects, units and a logout button.
+     * If not logged in, header will display log in form and a create account button.
+     * @param $isLoggedIn
+     * @param null $user
+     */
     static function header($isLoggedIn, $user = null)
     {
         require('header.html');
@@ -162,6 +173,13 @@ class ArmyForm
         echo "</form></div>";
     }
 
+    /**
+     * Redirects the browser to a specific page along with a message and a unit/project id where applicable.
+     * @param $action
+     * @param $msg
+     * @param $location
+     * @param null $id
+     */
     static function redirect($action, $msg, $location, $id = null)
     {
         $page = null;
@@ -195,6 +213,10 @@ class ArmyForm
 
     }
 
+    /**
+     * Checks to see if the user is logged in, and returns true/false.
+     * @return bool
+     */
     static function checkForLogIn()
     {
         if (isset($_SESSION['username'])) {
@@ -204,6 +226,11 @@ class ArmyForm
         return false;
     }
 
+    /**
+     * Checks to see if the user name is already in the database. If so, return true, if not false.
+     * @param $user
+     * @return bool
+     */
     static function checkForUserName($user)
     {
         $users = R::getAll('SELECT * FROM user');
@@ -217,6 +244,13 @@ class ArmyForm
         return false;
     }
 
+    /**
+     * Checks log in credentials entered, and returns true for valid or false for incorrect login.
+     * @param $user
+     * @param $password
+     * @return bool
+     * @throws IncorrectLoginException
+     */
     static function verifyUser($user, $password)
     {
         $users = R::getAll('SELECT * FROM user');
@@ -237,6 +271,10 @@ class ArmyForm
 
     }
 
+    /**
+     * Displays the user page, splitting between projects and news.
+     * @param $user
+     */
     static function displayUserPage($user)
     {
         echo "<div class='row'>";
@@ -249,6 +287,11 @@ class ArmyForm
         echo "</div>";
     }
 
+    /**
+     * Displays all projects for a user and displays them in a table.
+     * If the project owner is logged in, show delete and add unit options.
+     * @param $user
+     */
     static function displayProjects($user)
     {
         echo "<div id='displayProjects' class='container-fluid'>";
@@ -305,6 +348,11 @@ class ArmyForm
         echo "</div><!-- /div.displayProjects-->";
     }
 
+    /**
+     * Displays all units in a project on project.php.
+     * @param $projectid
+     * @param $loggedinuser
+     */
     static function displayUnits($projectid, $loggedinuser)
     {
         try {
@@ -398,10 +446,6 @@ class ArmyForm
                 echo "<dt># of points:</dt>";
                 echo "<dd>$totalPoints</dd>";
             }
-            echo "<dt># of units:</dt>";
-            echo "<dd>$totalUnits</dd>";
-            echo "<dt># of points:</dt>";
-            echo "<dd>$totalPoints</dd>";
             echo "<dt>Date Added:</dt>";
             echo "<dd>$projectdateadded</dd>";
             if (isset($projectdateedited)) {
@@ -582,6 +626,13 @@ class ArmyForm
     }
 
 
+    /**
+     * Displays the information on a unit on unit.php.
+     * If project owner is logged in, allow the ability to edit and delete the unit.
+     * @param $unitid
+     * @param $user
+     * @throws Exception
+     */
     public static function displayUnitInformation($unitid, $user)
     {
 
@@ -871,7 +922,9 @@ class ArmyForm
     }
 
 
-
+    /**
+     * Displays the ten latest news articles on the right side of most pages.
+     */
     static function displayNews()
     {
         echo "<div id='displayNews' class='container-fluid'>";
@@ -988,6 +1041,11 @@ class ArmyForm
         echo "</div>";
     }
 
+    /**
+     * Display all notes for a project or a unit.
+     * @param $projectID
+     * @param null $unitID
+     */
     public static function displayNotes($projectID, $unitID = null) {
 
         if (!is_null($unitID)) {
@@ -1049,18 +1107,7 @@ class ArmyForm
 
     }
 
-
-
-
-
 }
-
-
-
-
-
-
-
 
 
 /**
@@ -1071,9 +1118,5 @@ class UserAlreadyExistsException extends Exception
 }
 
 class IncorrectLoginException extends Exception
-{
-}
-
-class NoteNotCreatedException extends Exception
 {
 }

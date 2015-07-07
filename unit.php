@@ -1,5 +1,6 @@
 <?php
 /**
+ * Displays all information for a unit based on the unit id in the query string.
  * Created by PhpStorm.
  * User: Ryan Allan
  * Date: 2015-06-08

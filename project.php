@@ -1,5 +1,6 @@
 <?php
 /**
+ * Displays project information based on an ID in the query string.
  * Created by PhpStorm.
  * User: Ryan Allan
  * Date: 2015-06-08

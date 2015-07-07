@@ -1,5 +1,6 @@
 <?php
 /**
+ * The landing page for the project. Displays the log in information, and a listing of all users, projects and units.
  * Created by PhpStorm.
  * User: Ryan Allan
  * Date: 2015-06-08

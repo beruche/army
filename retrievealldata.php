@@ -1,7 +1,8 @@
 <?php
 /**
+ * Test script -- dumps all information in the database to a single page.
  * Created by PhpStorm.
- * User: beruc_000
+ * User: Ryan Allan
  * Date: 2015-06-17
  * Time: 4:41 PM
  */

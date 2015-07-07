@@ -1,7 +1,8 @@
 <?php
 /**
+ * Test script; ignored. Used to inject or test functions.
  * Created by PhpStorm.
- * User: beruc_000
+ * User: Ryan Allan
  * Date: 2015-06-17
  * Time: 4:41 PM
  */

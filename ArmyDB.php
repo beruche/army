@@ -1,7 +1,9 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: beruc_000
+ * Contains all of the methods that interface with the database directly, and is called by all of the other pages.
+ *
+ * Created by phpStorm
+ * User: Ryan Allan
  * Date: 2015-06-17
  * Time: 4:52 PM
  */
@@ -12,30 +14,61 @@ class ArmyDB {
      * Retrieval functions
      */
 
+    /**
+     * Retrieves all units as an array.
+     * @return array
+     */
     public static function retrieveAllUnits() {
         return R::getAll('SELECT * FROM unit');
     }
 
+    /**
+     * Retrieves all projects as an array.
+     * @return array
+     */
     public static function retrieveAllProjects() {
         return R::getAll('SELECT * FROM project');
     }
 
+    /**
+     * Retrieves all users as an array.
+     * @return array
+     */
     public static function retrieveAllUsers() {
         return R::getAll('SELECT * FROM user');
     }
 
+    /**
+     * Retrieves all notes as an array.
+     * @return array
+     */
     public static function retrieveAllNotes() {
         return R::getAll('SELECT * FROM note');
     }
 
+    /**
+     * Retrieves all news as an array.
+     * @return array
+     */
     public static function retrieveAllNews() {
         return R::getAll('SELECT * FROM news');
     }
 
+    /**
+     * Retrieves the project bean based on a project ID.
+     * @param $projectID The project ID to look up.
+     * @return \RedBeanPHP\OODBBean
+     */
     public static function retrieveProjectInfo($projectID) {
         return R::load('project', $projectID);
     }
 
+    /**
+     * Retrieves all units for a specific project as an array of beans. Throws an exception if there are no units.
+     * @param $projectID The project ID to look up.
+     * @return array
+     * @throws Exception
+     */
     public static function retrieveUnitsFromProject($projectID) {
         $units = R::find('unit', 'projectid = ' . $projectID);
 
@@ -46,6 +79,12 @@ class ArmyDB {
         return $units;
     }
 
+    /**
+     * Retrieves the unit bean based on a unit ID. Returns an exception if the unit id does not exist.
+     * @param $unitID
+     * @return \RedBeanPHP\OODBBean
+     * @throws Exception
+     */
     public static function retrieveUnit($unitID) {
         $unit = R::load('unit', $unitID);
 
@@ -56,6 +95,12 @@ class ArmyDB {
         return $unit;
     }
 
+    /**
+     * Retrieves the title for a specific unit given the UNit ID; throws an exception if the unit ID does not exist.
+     * @param $unitID
+     * @return mixed
+     * @throws Exception
+     */
     public static function retrieveUnitTitle($unitID) {
         try {
             $unit = ArmyDB::retrieveUnit($unitID);
@@ -67,6 +112,12 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Retrieves the title for a specific project given the Project ID; throws an exception if the project ID doesn't exist.
+     * @param $projectID
+     * @return mixed
+     * @throws Exception
+     */
     public static function retrieveProjectTitle($projectID) {
         try {
             $project = ArmyDB::retrieveProjectInfo($projectID);
@@ -78,6 +129,12 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Retrieves all units based on a user ID as an array. An exception is thrown if no units have been created by that user.
+     * @param $usr
+     * @return array
+     * @throws Exception
+     */
     public static function retrieveProjectsFromUser($usr) {
         $projects = R::find('project', 'username = "' . $usr . '"');
 
@@ -88,11 +145,20 @@ class ArmyDB {
         return $projects;
     }
 
+    /**
+     * Retrieves the last 10 news items, sorted by latest date.
+     * @return array
+     */
     public static function retrieveRecentNews() {
         return R::findAll( 'news' , ' ORDER BY date_added DESC LIMIT 10 ' );
     }
 
-
+    /**
+     * Retrieves the unit name associated with a specific project.
+     * @param $projectid
+     * @return array
+     * @throws Exception
+     */
     public static function retrieveUserNameFromProject($projectid) {
         $project = R::getRow('SELECT username from project WHERE id ='. $projectid);
 
@@ -103,10 +169,15 @@ class ArmyDB {
         return $project;
     }
 
-    /*
-     * Addition functions
+    /**
+     * Adds a user to the SQLite DB. Throws an exception if there is an error creating the user.
+     * @param $usr Username of the new user.
+     * @param $password Password of the new user.
+     * @param $email Email of the new user.
+     * @param $fname First name of the new user.
+     * @param $lname Last name of the new user.
+     * @throws Exception
      */
-
     public static function addUser($usr, $password, $email, $fname, $lname) {
         try {
             $user = R::dispense('user');
@@ -122,6 +193,18 @@ class ArmyDB {
             throw new Exception ("Unable to create user. " . $e->getMessage());
         }
     }
+
+    /**
+     * Adds a unit to a specific project in the DB. Throws an exception if the project ID doesn't exist, if the unit name is empty or if there's an error creating the unit.
+     * @param $projectid Project ID to add to.
+     * @param $unitname Name of the unit
+     * @param $qty The number of models in the unit.
+     * @param $pts Total points cost of the unit.
+     * @param $status What the painting status is as three seperate numbers.
+     * @param $notes Notes associated with the unit.
+     * @return int|string
+     * @throws Exception
+     */
     public static function addUnit($projectid, $unitname, $qty, $pts, $status, $notes) {
 
         try {
@@ -156,6 +239,16 @@ class ArmyDB {
 
     }
 
+    /**
+     * Adds a project to the Redbean DB. Throws an exception if there is an error creating a project.
+     * @param $user Username of the new project.
+     * @param $projectname The name of the project.
+     * @param $battlegroup The battle group of the project, depending on game type.
+     * @param $gamegroup The game type.
+     * @param $description Description of the new project.
+     * @return int|string
+     * @throws Exception
+     */
     public static function addProject($user, $projectname, $battlegroup, $gamegroup, $description) {
 
         try {
@@ -179,6 +272,15 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Adds a new news item to the list.
+     * @param $user The user performing the action.
+     * @param $action The action being taken. See action.php.
+     * @param $projectid The project ID associated with the action.
+     * @param null $unitid The unit ID associated with the action, if necessary.
+     * @return int|string
+     * @throws Exception
+     */
     public static function addNewsItem($user, $action, $projectid, $unitid = null) {
 
         try {
@@ -202,6 +304,15 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Adds a note to a specific unit or project.
+     * @param $poster The creator of the note.
+     * @param $unitid The unit ID to post to.
+     * @param $projectid The project ID to post to.
+     * @param $notetext The text of the note.
+     * @return int|string
+     * @throws Exception
+     */
     public static function addNote($poster, $unitid, $projectid, $notetext) {
         $dateAdded = R::isoDateTime();
 
@@ -231,6 +342,18 @@ class ArmyDB {
 
     /*
      * Updating functions
+     */
+
+    /**
+     * Retrieves a unit and updates the unit information.
+     * @param $unitid
+     * @param $unitname
+     * @param $qty
+     * @param $pts
+     * @param $status
+     * @param $notes
+     * @return int|string
+     * @throws Exception
      */
     public static function updateUnit($unitid, $unitname, $qty, $pts, $status, $notes)
     {
@@ -274,6 +397,16 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Retrieves a project and updates the project information based on information provided by a form.
+     * @param $projectid
+     * @param $projectname
+     * @param $battlegroup
+     * @param $gamegroup
+     * @param $description
+     * @return int|string
+     * @throws Exception
+     */
     public static function updateProject($projectid, $projectname, $battlegroup, $gamegroup, $description) {
 
         $dateEdited = R::isoDateTime();
@@ -312,7 +445,16 @@ class ArmyDB {
         }
     }
 
-
+    /**
+     * Retrieves a user and updates the user information.
+     * @param $username
+     * @param $fname
+     * @param $lname
+     * @param $email
+     * @param $prefcolor **unused at this point**
+     * @return int|string
+     * @throws Exception
+     */
     public static function updateUser($username, $fname, $lname, $email, $prefcolor) {
         try {
             $user = R::load('user', $username);
@@ -346,6 +488,13 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Updates the password of a user. Important enough to put in a separate function.
+     * @param $username Username to change
+     * @param $password The new password.
+     * @return int|string
+     * @throws Exception
+     */
     public static function updatePassword($username, $password) {
         try {
             $user = R::load('user', $username);
@@ -370,6 +519,12 @@ class ArmyDB {
     /*
      * Deleting functions
      */
+
+    /**
+     * Deletes a unit from the database based on unit ID.
+     * @param $unitid
+     * @throws Exception
+     */
     public static function deleteUnit($unitid) {
         $unit = R::load('unit', $unitid);
 
@@ -381,6 +536,11 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Deletes all units from the database.
+     * @param $projectid
+     * @throws Exception
+     */
     public static function deleteAllUnits($projectid) {
         try {
             $units = R::find('unit', 'projectid = ' . $projectid);
@@ -398,6 +558,11 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Deletes a project from the database based on project ID.
+     * @param $projectid
+     * @throws Exception
+     */
     public static function deleteProject($projectid) {
         $unit = R::load('project', $projectid);
 
@@ -409,6 +574,12 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Retrieves the user ID associated with a specific unit ID.
+     * @param $unitID
+     * @return array
+     * @throws Exception
+     */
     public static function retrieveUserIDfromUnitID($unitID) {
         try {
             $unit = self::retrieveUnit($unitID);
@@ -419,6 +590,12 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Checks to see if a unit exists and returns true or false.
+     * @param $unitID
+     * @return bool
+     * @throws Exception
+     */
     public static function doesUnitExist($unitID) {
         try {
             $unit = self::retrieveUnit($unitID);
@@ -434,6 +611,12 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Checks to see if a project exists and returns true or false.
+     * @param $projectID
+     * @return bool
+     * @throws Exception
+     */
     public static function doesProjectExist($projectID) {
         try {
             $project = self::retrieveProjectInfo($projectID);
@@ -449,10 +632,21 @@ class ArmyDB {
         }
     }
 
+    /**
+     * The status is stored as three numbers, such as 212. This function separates them and adds them together to be from 0 to 10.
+     * @param $status
+     * @return mixed
+     */
     public static function convertStatusToDecimal($status) {
         $statusarray = self::convertStatusToArray($status);
         return $statusarray[0] + $statusarray[1] + $statusarray[2];
     }
+
+    /**
+     * This function separates the status and returns them in an array.
+     * @param $status
+     * @return array
+     */
     public static function convertStatusToArray($status) {
         if ($status == 0) {
             $statusArray = [0, 0, 0];
@@ -464,6 +658,12 @@ class ArmyDB {
         return $statusArray;
     }
 
+    /**
+     * This function takes the number and the status type and returns the corresponding description in text.
+     * @param $status
+     * @param $text
+     * @return string
+     */
     public static function convertStatusToText($status, $text) {
         switch ($text) {
             case "assemble":
@@ -492,7 +692,7 @@ class ArmyDB {
                     case 1: return "Bare basing";
                     case 2: return "Painting basin";
                     case 3: return "Highlighted basing";
-                    default:
+                    default: return "Base: Not sure what you're trying to do.";
                 }
                 break;
             default:
@@ -501,6 +701,11 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Counts the number of units in a project and returns the amount.
+     * @param $projectID
+     * @return int
+     */
     public static function countUnitsInProject($projectID)
     {
         try {
@@ -521,6 +726,11 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Returns the sum of the points of all units in a project.
+     * @param $projectID
+     * @return int
+     */
     public static function countPointsInProject($projectID)
     {
         try {
@@ -537,6 +747,14 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Calculates the project status as a percentage based on the number of points in the army.
+     * Throws an exception if it is unable to access the number of points or units.
+     * If there are no units, return 0%.
+     * @param $projectID
+     * @return float|string
+     * @throws Exception
+     */
     public static function calculateProjectStatusByPts($projectID) {
         $countPts = ArmyDB::countPointsInProject($projectID);
 
@@ -555,6 +773,14 @@ class ArmyDB {
         }
     }
 
+    /**
+     * Calculates the project status as a percentage based on the number of units in the army.
+     * If units or points = 0, return 0.0%.
+     * Throws exceptions if unable to retrieve the number of units.
+     * @param $projectID
+     * @return float|string
+     * @throws Exception
+     */
     public static function calculateProjectStatusByUnits($projectID) {
         $countUnits = ArmyDB::countUnitsInProject($projectID);
 
@@ -576,14 +802,29 @@ class ArmyDB {
 
     }
 
+    /**
+     * Retrieves the notes for a specific unit id.
+     * @param $unitID
+     * @return array
+     */
     public static function retrieveNotesByUnitID($unitID) {
         return R::find('note', 'unitid = ' . $unitID);
     }
 
+    /**
+     * Retrieves the notes for a specific project id.
+     * @param $projectID
+     * @return array
+     */
     public static function retrieveNotesByProjectID($projectID) {
         return R::find('note', 'projectid = ' . $projectID);
     }
 
+    /**
+     * Retrieves the user information for a specific user based on username.
+     * @param $user
+     * @return array
+     */
     public static function retrieveUserInformation($user) {
         return R::find('user', 'username = ? ', [  $user ]);
     }

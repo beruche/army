@@ -1,7 +1,7 @@
 <?php
 /**
- * Created by PhpStorm.
- * User: beruc_000
+ * Most database changes are processed through action.php, passed along as part of a form.
+ * User: Ryan Allan
  * Date: 2015-06-30
  * Time: 5:12 PM
  */
@@ -11,7 +11,6 @@ session_start();
 require_once 'rb.php';
 require_once 'ArmyForm.php';
 require_once 'ArmyDB.php';
-
 
 R::setup('sqlite:army.db');
 
@@ -30,6 +29,10 @@ switch ($action) {
      * Unit Selections
      */
     case "createUnit":
+        /**
+         * Creates a unit in the database along with posting a news article. If an exception comes up,
+         * cancel the process and go back to the project page stating that the action could not be completed.
+         */
         $unitname = $_REQUEST['unitname'];
         $qty = $_REQUEST['qty'];
         $pts = $_REQUEST['pts'];
@@ -46,6 +49,10 @@ switch ($action) {
 
         break;
     case "deleteUnit":
+        /**
+         * Deletes a unit based on the unit id. If an exception occurs, redirect to the project
+         * page the site came from stating the action cannot be completed.
+         */
         $unitID = $_REQUEST['id'];
         $projectID = $_REQUEST['projectid'];
 
@@ -59,7 +66,10 @@ switch ($action) {
         }
         break;
     case "editUnit":
-
+        /**
+         * Retrieves a unit from the database based on unit id, and updates the respective fields.
+         * If an exception occurs, return to unit page stating why.
+         */
         //var_dump($_REQUEST);
 
         $unitid = $_REQUEST['unitid'];
@@ -90,7 +100,10 @@ switch ($action) {
      * Project Selections
      */
     case "createProject":
-
+        /**
+         * Creates a project in the database with the information provided in the form.
+         * If an exception occurs, return to user page with error message.
+         */
         //var_dump($_REQUEST);
 
         $submitter = $_REQUEST['submitter'];
@@ -117,6 +130,9 @@ switch ($action) {
         break;
 
     case "deleteProject":
+        /**
+         * Deletes a project based on project id. If an error occurs, return to user page with error message.
+         */
         $projectid = $_REQUEST['id'];
 
         try {
@@ -132,6 +148,10 @@ switch ($action) {
         break;
 
     case "editProject":
+        /**
+         * Retrieves a project based on project id, and updates it with information provided by form, and posts a news article.
+         * If exception occurs, return to user page with error message.
+         */
         $projectid = $_REQUEST['id'];
         $projectname = $_REQUEST['projectname'];
         $battlegroup = $_REQUEST['btlgrp'];
@@ -155,6 +175,10 @@ switch ($action) {
      * User Selections
      */
     case "createUser":
+        /**
+         * Creates a user in the database and posts a news article.
+         * If an error occurs, return to index with error message.
+         */
         $user = $_REQUEST['tmpUsr'];
         $pwd = $_REQUEST['tmpPwd'];
         $email = $_REQUEST['tmpEmail'];
@@ -173,6 +197,10 @@ switch ($action) {
         break;
 
     case "addNote":
+        /**
+         * Adds a note to a specific user ID or project ID, and posts a news article.
+         * If an error occurs, return to either the unit or project page with an error message.
+         */
         $poster = $_REQUEST['poster'];
         $notetext = $_REQUEST['notetext'];
         //var_dump($_REQUEST);

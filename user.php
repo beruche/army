@@ -1,5 +1,6 @@
 <?php
 /**
+ * Displays all information for a user based on the username in the querystring.
  * Created by PhpStorm.
  * User: Ryan Allan
  * Date: 2015-06-08
